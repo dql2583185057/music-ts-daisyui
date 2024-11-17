@@ -1,10 +1,7 @@
 export interface Song {
   id: number
   name: string
-  ar: Array<{
-    id: number
-    name: string
-  }>
+  ar: Artist[]
   al: {
     id: number
     name: string
@@ -34,8 +31,12 @@ export interface Playlist {
 export interface Artist {
   id: number
   name: string
+  picUrl?: string
   img1v1Url: string
-  musicSize: number
+  musicSize?: number
+  fansSize?: number
+  albumSize?: number
+  mvSize?: number
 }
 
 export interface Album {

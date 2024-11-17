@@ -63,4 +63,14 @@ html, body {
 
 #app {
   height: 100%;
+}
+
+/* 防止滚动加载时页面跳动 */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
 } 

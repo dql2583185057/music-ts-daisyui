@@ -261,7 +261,7 @@ const handleSearch = () => {
       path: '/search',
       query: { 
         q: searchQuery.value.trim(),
-        type: '1'
+        type: '1018'
       }
     })
     showSuggestions.value = false

@@ -38,9 +38,58 @@ export const searchService = {
     }
   },
 
+  // 获取歌手详情
+  getArtistDetail: async (id: number) => {
+    try {
+      const { data } = await request.get(`/artist/detail?id=${id}`)
+      return data
+    } catch (error) {
+      console.error('获取歌手详情失败:', error)
+      throw error
+    }
+  },
+
   // 搜索
   search: async (keywords: string, type: string = '1', offset: number = 0, limit: number = 30): Promise<SearchResponse> => {
     try {
+      // 如果是综合搜索，需要同时获取多个类型的数据
+      if (type === '1018') {
+        // 先搜索歌手，获取原唱信息
+        const artistRes = await request.get('/cloudsearch', { 
+          params: { 
+            keywords, 
+            type: '100', 
+            limit: 1 
+          } 
+        })
+
+        // 再获取其他数据
+        const [songsRes, albumsRes, playlistsRes, mvRes] = await Promise.all([
+          request.get('/cloudsearch', { params: { keywords, type: '1', limit: 10 } }),
+          request.get('/cloudsearch', { params: { keywords, type: '10', limit: 6 } }),
+          request.get('/cloudsearch', { params: { keywords, type: '1000', limit: 6 } }),
+          request.get('/cloudsearch', { params: { keywords, type: '1004', limit: 4 } })
+        ])
+
+        return {
+          code: 200,
+          result: {
+            artist: artistRes.data.result.artists?.[0],
+            songs: songsRes.data.result.songs,
+            songCount: songsRes.data.result.songCount,
+            artists: artistRes.data.result.artists,
+            artistCount: artistRes.data.result.artistCount,
+            albums: albumsRes.data.result.albums,
+            albumCount: albumsRes.data.result.albumCount,
+            playlists: playlistsRes.data.result.playlists,
+            playlistCount: playlistsRes.data.result.playlistCount,
+            mvs: mvRes.data.result.mvs,
+            mvCount: mvRes.data.result.mvCount
+          }
+        }
+      }
+
+      // 其他类型的搜索保持不变
       const { data } = await request.get('/cloudsearch', {
         params: {
           keywords,
@@ -49,32 +98,7 @@ export const searchService = {
           limit
         }
       })
-      
-      if (data.code === 200) {
-        const result = data.result
-        return {
-          code: data.code,
-          result: {
-            songs: result.songs,
-            songCount: result.songCount,
-            artists: result.artists,
-            artistCount: result.artistCount,
-            albums: result.albums,
-            albumCount: result.albumCount,
-            playlists: result.playlists,
-            playlistCount: result.playlistCount,
-            mvs: result.mvs,
-            mvCount: result.mvCount,
-            videos: result.videos,
-            videoCount: result.videoCount,
-            userprofiles: result.userprofiles,
-            userprofileCount: result.userprofileCount,
-            djRadios: result.djRadios,
-            djRadiosCount: result.djRadiosCount
-          }
-        }
-      }
-      throw new Error('搜索失败')
+      return data
     } catch (error) {
       console.error('搜索失败:', error)
       throw error
