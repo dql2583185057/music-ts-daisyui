@@ -154,7 +154,11 @@
 
           <!-- 搜索建议 -->
           <div v-else class="p-4">
+            <div v-if="isLoadingSuggestions" class="flex justify-center py-4">
+              <span class="loading loading-spinner loading-sm"></span>
+            </div>
             <div 
+              v-else
               v-for="(suggestion, index) in searchSuggestions" 
               :key="index"
               class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer"
@@ -163,7 +167,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <span>{{ suggestion }}</span>
+              <span v-html="highlightKeyword(suggestion)"></span>
             </div>
           </div>
         </div>
@@ -227,8 +231,37 @@ watch(searchQuery, async (newQuery) => {
   if (newQuery) {
     try {
       isLoadingSuggestions.value = true
-      const suggestions = await searchService.getSearchSuggestions(newQuery)
-      searchSuggestions.value = suggestions
+      const { data } = await request.get('/search/suggest', {
+        params: { keywords: newQuery }
+      })
+      if (data.code === 200) {
+        // 处理不同类型的搜索建议
+        const suggestions: string[] = []
+        
+        // 添加单曲建议
+        if (data.result.songs) {
+          data.result.songs.forEach((song: any) => {
+            suggestions.push(song.name)
+          })
+        }
+        
+        // 添加歌手建议
+        if (data.result.artists) {
+          data.result.artists.forEach((artist: any) => {
+            suggestions.push(artist.name)
+          })
+        }
+        
+        // 添加专辑建议
+        if (data.result.albums) {
+          data.result.albums.forEach((album: any) => {
+            suggestions.push(album.name)
+          })
+        }
+
+        // 去重
+        searchSuggestions.value = Array.from(new Set(suggestions))
+      }
     } catch (error) {
       console.error('获取搜索建议失败:', error)
       searchSuggestions.value = [
@@ -367,6 +400,13 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+// 高亮搜索关键词
+const highlightKeyword = (text: string): string => {
+  if (!searchQuery.value || !text) return text
+  const reg = new RegExp(searchQuery.value, 'gi')
+  return text.replace(reg, match => `<span class="text-primary">${match}</span>`)
+}
 </script>
 
 <style scoped>

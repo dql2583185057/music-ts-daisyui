@@ -9,7 +9,15 @@ export interface Song {
   }
   dt: number
   mv: number
+  fee: number
+  sq?: boolean
   alia?: string[]
+  originSongSimpleData?: {
+    artists: Array<{
+      id: number
+      name: string
+    }>
+  }
 }
 
 export interface Playlist {

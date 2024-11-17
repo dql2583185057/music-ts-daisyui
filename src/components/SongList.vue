@@ -43,9 +43,34 @@
                   </div>
                 </div>
               </div>
-              <div class="flex flex-col">
-                <span v-html="highlightKeyword(song.name, keyword)"></span>
-                <span v-if="song.alia?.length" class="text-xs text-base-content/50">{{ song.alia.join(' ') }}</span>
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1 min-w-0">
+                  <span class="truncate" v-html="highlightKeyword(song.name, keyword)"></span>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <span v-if="song.fee === 1" class="badge badge-sm badge-error">VIP</span>
+                    <span v-if="song.sq" class="badge badge-sm badge-primary">SQ</span>
+                    <span 
+                      v-if="song.ar.some(artist => artist.id === originalArtistId)" 
+                      class="badge badge-sm badge-success"
+                    >
+                      原唱
+                    </span>
+                    <svg 
+                      v-if="song.mv" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      class="h-4 w-4 text-primary cursor-pointer hover:text-primary/80 transition-colors"
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                      @click.stop="handleMVClick(song.mv)"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span v-if="song.alia?.length" class="text-xs text-base-content/70 truncate">{{ song.alia.join(' ') }}</span>
+                </div>
               </div>
             </div>
           </td>
@@ -60,14 +85,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Song } from '@/types/music'
+
+const router = useRouter()
 
 const props = withDefaults(defineProps<{
   songs: Song[]
   keyword?: string
   startIndex?: number
+  originalArtistId?: number
 }>(), {
-  startIndex: 0
+  startIndex: 0,
+  originalArtistId: undefined
 })
 
 // 格式化时长
@@ -82,6 +112,11 @@ const highlightKeyword = (text: string, keyword?: string) => {
   if (!keyword || !text) return text
   const reg = new RegExp(keyword, 'gi')
   return text.replace(reg, match => `<span class="keyword-highlight">${match}</span>`)
+}
+
+// 处理MV点击
+const handleMVClick = (mvId: number) => {
+  router.push(`/mv/${mvId}`)
 }
 </script>
 

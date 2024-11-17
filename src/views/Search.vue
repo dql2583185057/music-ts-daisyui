@@ -1,19 +1,19 @@
 <template>
-  <div class="container mx-auto">
+  <div class="container mx-auto px-4">
     <!-- 搜索结果统计 -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold">搜索 "{{ searchQuery }}"</h1>
-      <p class="text-base-content/70 mt-2">
+      <h1 class="text-xl lg:text-2xl font-bold">搜索 "{{ searchQuery }}"</h1>
+      <p class="text-sm lg:text-base text-base-content/70 mt-2">
         找到 {{ totalResults }} 个相关{{ getTabName(activeTab) }}
       </p>
     </div>
 
     <!-- 搜索结果分类 -->
-    <div class="flex items-center gap-4 mb-6 border-b border-base-300 overflow-x-auto">
+    <div class="flex items-center gap-2 lg:gap-4 mb-6 border-b border-base-300 overflow-x-auto">
       <a 
         v-for="tab in tabs" 
         :key="tab.type"
-        class="px-4 py-3 relative cursor-pointer transition-colors whitespace-nowrap"
+        class="px-3 lg:px-4 py-3 relative cursor-pointer transition-colors whitespace-nowrap text-sm lg:text-base"
         :class="{ 
           'text-primary font-medium': activeTab === tab.type,
           'hover:text-primary/70': activeTab !== tab.type
@@ -40,9 +40,9 @@
       <template v-if="activeTab === '1018'">
         <!-- 原唱歌手 -->
         <div v-if="result?.artist" class="mb-8">
-          <div class="flex gap-6 bg-base-200/50 rounded-box p-6">
-            <div class="flex items-center gap-6 flex-1">
-              <div class="relative w-32 h-32 rounded-full overflow-hidden group">
+          <div class="flex flex-col lg:flex-row gap-4 lg:gap-6 bg-base-200/50 rounded-box p-4 lg:p-6">
+            <div class="flex items-start lg:items-center gap-4 lg:gap-6 flex-1">
+              <div class="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden group flex-shrink-0">
                 <img 
                   :src="result.artist.img1v1Url" 
                   :alt="result.artist.name" 
@@ -50,9 +50,9 @@
                   @error="e => (e.target as HTMLImageElement).src = 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'"
                 />
               </div>
-              <div class="flex-1">
-                <h3 class="text-xl font-bold mb-2" v-html="highlightKeyword(result.artist.name)"></h3>
-                <div class="flex gap-6 text-sm text-base-content/70 mb-4">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg lg:text-xl font-bold mb-2" v-html="highlightKeyword(result.artist.name)"></h3>
+                <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-base-content/70 mb-4">
                   <div>
                     <span class="font-medium">单曲数：</span>
                     <span>{{ result.artist.musicSize || 0 }}</span>
@@ -65,7 +65,7 @@
                 <div class="text-sm text-base-content/70 mb-4">
                   原唱歌手
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                   <button class="btn btn-primary btn-sm gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -93,13 +93,14 @@
           <SongList 
             :songs="songs"
             :keyword="searchQuery"
+            :original-artist-id="result?.artist?.id || originalArtistId"
           />
         </div>
 
         <!-- 歌手 -->
         <div v-if="artists.length" class="mb-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">歌手</h2>
+            <h2 class="text-lg lg:text-xl font-bold">歌手</h2>
             <router-link 
               :to="{ query: { ...route.query, type: '100' }}"
               class="text-sm text-primary hover:text-primary/80"
@@ -107,13 +108,13 @@
               查看全部
             </router-link>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 lg:gap-4">
             <div 
-              v-for="artist in artists" 
+              v-for="artist in artists.slice(0, 6)" 
               :key="artist.id"
               class="card bg-transparent hover:bg-base-200 transition-all duration-300 cursor-pointer group"
             >
-              <figure class="p-4">
+              <figure class="p-2 lg:p-4">
                 <div class="w-full aspect-square rounded-full overflow-hidden group-hover:ring-4 ring-primary/20 transition-all duration-300">
                   <img 
                     :src="artist.img1v1Url" 
@@ -123,8 +124,8 @@
                   />
                 </div>
               </figure>
-              <div class="card-body p-3 text-center">
-                <h2 class="font-bold text-base truncate" v-html="highlightKeyword(artist.name)"></h2>
+              <div class="card-body p-2 lg:p-3 text-center">
+                <h2 class="font-bold text-sm lg:text-base truncate" v-html="highlightKeyword(artist.name)"></h2>
                 <p class="text-xs text-base-content/70">
                   单曲：{{ artist.musicSize || 0 }}
                 </p>
@@ -136,7 +137,7 @@
         <!-- 专辑 -->
         <div v-if="albums.length" class="mb-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">专辑</h2>
+            <h2 class="text-lg lg:text-xl font-bold">专辑</h2>
             <router-link 
               :to="{ query: { ...route.query, type: '10' }}"
               class="text-sm text-primary hover:text-primary/80"
@@ -155,7 +156,7 @@
                   :src="album.picUrl" 
                   :alt="album.name" 
                   class="w-full h-full object-cover"
-               
+                  @error="e => (e.target as HTMLImageElement).src = 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'"
                 />
               </figure>
               <div class="card-body p-3">
@@ -169,7 +170,7 @@
         <!-- 歌单 -->
         <div v-if="playlists.length" class="mb-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">歌单</h2>
+            <h2 class="text-lg lg:text-xl font-bold">歌单</h2>
             <router-link 
               :to="{ query: { ...route.query, type: '1000' }}"
               class="text-sm text-primary hover:text-primary/80"
@@ -212,7 +213,7 @@
         <!-- MV -->
         <div v-if="mvs.length" class="mb-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">MV</h2>
+            <h2 class="text-lg lg:text-xl font-bold">MV</h2>
             <router-link 
               :to="{ query: { ...route.query, type: '1004' }}"
               class="text-sm text-primary hover:text-primary/80"
@@ -268,6 +269,7 @@
         v-if="activeTab === '1'" 
         :songs="songs"
         :keyword="searchQuery"
+        :original-artist-id="result?.artist?.id || originalArtistId"
       />
 
       <!-- 歌手 -->
@@ -480,6 +482,9 @@ const radios = ref<Radio[]>([])
 // 添加result的响应式引用
 const result = ref<any>(null)
 
+// 添加originalArtistId的响应式引用
+const originalArtistId = ref<number | undefined>()
+
 // 标签页配置
 const tabs = [
   { type: '1018', name: '综合' },
@@ -570,7 +575,6 @@ const loadMore = async () => {
     )
     
     if (res.code === 200) {
-      // 保存整个结果对象
       result.value = res.result
 
       // 设置总数和数据
@@ -595,6 +599,13 @@ const loadMore = async () => {
         case '1':
           totalResults.value = res.result.songCount || 0
           if (res.result.songs) {
+            // 如果是第一页，尝试获取原唱歌手ID
+            if (offset.value === 0) {
+              const artistRes = await searchService.search(searchQuery.value, '100', 0, 1)
+              if (artistRes.code === 200 && artistRes.result.artists?.length > 0) {
+                originalArtistId.value = artistRes.result.artists[0].id
+              }
+            }
             const newSongs = [...songs.value]
             res.result.songs.forEach(song => {
               if (!newSongs.some(s => s.id === song.id)) {
@@ -699,7 +710,8 @@ const clearResults = () => {
   mvs.value = []
   users.value = []
   radios.value = []
-  result.value = null // 清空result
+  result.value = null
+  originalArtistId.value = undefined // 清空原唱歌手ID
   offset.value = 0
   totalResults.value = 0
 }
