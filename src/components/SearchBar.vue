@@ -231,46 +231,11 @@ watch(searchQuery, async (newQuery) => {
   if (newQuery) {
     try {
       isLoadingSuggestions.value = true
-      const { data } = await request.get('/search/suggest', {
-        params: { keywords: newQuery }
-      })
-      if (data.code === 200) {
-        // 处理不同类型的搜索建议
-        const suggestions: string[] = []
-        
-        // 添加单曲建议
-        if (data.result.songs) {
-          data.result.songs.forEach((song: any) => {
-            suggestions.push(song.name)
-          })
-        }
-        
-        // 添加歌手建议
-        if (data.result.artists) {
-          data.result.artists.forEach((artist: any) => {
-            suggestions.push(artist.name)
-          })
-        }
-        
-        // 添加专辑建议
-        if (data.result.albums) {
-          data.result.albums.forEach((album: any) => {
-            suggestions.push(album.name)
-          })
-        }
-
-        // 去重
-        searchSuggestions.value = Array.from(new Set(suggestions))
-      }
+      const res = await searchService.getSearchSuggestions(newQuery)
+      searchSuggestions.value = res
     } catch (error) {
       console.error('获取搜索建议失败:', error)
-      searchSuggestions.value = [
-        newQuery,
-        `${newQuery} - 热门`,
-        `${newQuery} - 歌手`,
-        `${newQuery} - 专辑`,
-        `${newQuery} - 歌单`
-      ]
+      searchSuggestions.value = []
     } finally {
       isLoadingSuggestions.value = false
     }

@@ -54,38 +54,28 @@ export const searchService = {
     try {
       // 如果是综合搜索，需要同时获取多个类型的数据
       if (type === '1018') {
-        // 先搜索歌手，获取原唱信息
-        const artistRes = await request.get('/cloudsearch', { 
-          params: { 
-            keywords, 
-            type: '100', 
-            limit: 1 
-          } 
-        })
-
-        // 再获取其他数据
-        const [songsRes, albumsRes, playlistsRes, mvRes] = await Promise.all([
+        const [artistRes, songsRes, albumsRes, playlistsRes] = await Promise.all([
+          request.get('/cloudsearch', { params: { keywords, type: '100', limit: 1 } }),
           request.get('/cloudsearch', { params: { keywords, type: '1', limit: 10 } }),
           request.get('/cloudsearch', { params: { keywords, type: '10', limit: 6 } }),
-          request.get('/cloudsearch', { params: { keywords, type: '1000', limit: 6 } }),
-          request.get('/cloudsearch', { params: { keywords, type: '1004', limit: 4 } })
+          request.get('/cloudsearch', { params: { keywords, type: '1000', limit: 6 } })
         ])
+
+        const result: SearchResult = {
+          songs: songsRes.data.result.songs || [],
+          songCount: songsRes.data.result.songCount || 0,
+          artists: artistRes.data.result.artists || [],
+          artistCount: artistRes.data.result.artistCount || 0,
+          albums: albumsRes.data.result.albums || [],
+          albumCount: albumsRes.data.result.albumCount || 0,
+          playlists: playlistsRes.data.result.playlists || [],
+          playlistCount: playlistsRes.data.result.playlistCount || 0,
+          artist: artistRes.data.result.artists?.[0] || undefined
+        }
 
         return {
           code: 200,
-          result: {
-            artist: artistRes.data.result.artists?.[0],
-            songs: songsRes.data.result.songs,
-            songCount: songsRes.data.result.songCount,
-            artists: artistRes.data.result.artists,
-            artistCount: artistRes.data.result.artistCount,
-            albums: albumsRes.data.result.albums,
-            albumCount: albumsRes.data.result.albumCount,
-            playlists: playlistsRes.data.result.playlists,
-            playlistCount: playlistsRes.data.result.playlistCount,
-            mvs: mvRes.data.result.mvs,
-            mvCount: mvRes.data.result.mvCount
-          }
+          result
         }
       }
 

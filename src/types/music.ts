@@ -23,16 +23,12 @@ export interface Song {
 export interface Playlist {
   id: number
   name: string
-  coverImgUrl?: string
-  cover?: string
-  songs?: Song[]
-  trackCount?: number
-  songCount?: number
-  description?: string
+  coverImgUrl: string
+  playCount: number
+  trackCount: number
   creator?: {
     id: number
     nickname: string
-    avatarUrl: string
   }
 }
 
@@ -116,7 +112,7 @@ export interface SearchResult {
   userprofileCount?: number
   djRadios?: Radio[]
   djRadiosCount?: number
-  [key: string]: any
+  artist?: Artist
 }
 
 export interface SearchResponse {
