@@ -563,10 +563,10 @@ onUnmounted(() => {
 
 // 加载更多
 const loadMore = async () => {
-  if (isLoading.value || isLoadingMore.value || !hasMore.value || !searchQuery.value) return
+  if (isLoading.value || !hasMore.value || !searchQuery.value) return
 
   try {
-    isLoadingMore.value = true
+    isLoading.value = true
     const res = await searchService.search(
       searchQuery.value,
       activeTab.value,
@@ -575,24 +575,27 @@ const loadMore = async () => {
     )
     
     if (res.code === 200) {
-      result.value = res.result
+      console.log('搜索结果:', res.result)
+      console.log('MV数据:', res.result.mvs)
 
       // 设置总数和数据
       switch (activeTab.value) {
         case '1018': // 综合搜索
-          if (res.result.songs) {
-            songs.value = res.result.songs.slice(0, 10)
-          }
+          totalResults.value = res.result.songCount || 0
+          if (res.result.songs) songs.value = res.result.songs.slice(0, 10)
           if (res.result.artists) {
             artists.value = res.result.artists.slice(0, 6)
+            // 设置原唱歌手
+            if (res.result.artists.length > 0) {
+              result.value = {
+                ...res.result,
+                artist: res.result.artists[0]
+              }
+            }
           }
-          if (res.result.albums) {
-            albums.value = res.result.albums.slice(0, 6)
-          }
-          if (res.result.playlists) {
-            playlists.value = res.result.playlists.slice(0, 6)
-          }
-          if (res.result.mvs) {
+          if (res.result.albums) albums.value = res.result.albums.slice(0, 6)
+          if (res.result.playlists) playlists.value = res.result.playlists.slice(0, 6)
+          if (res.result.mvs && res.result.mvs.length > 0) {
             mvs.value = res.result.mvs.slice(0, 4)
           }
           break
@@ -655,7 +658,7 @@ const loadMore = async () => {
   } catch (error) {
     console.error('搜索失败:', error)
   } finally {
-    isLoadingMore.value = false
+    isLoading.value = false
   }
 }
 
