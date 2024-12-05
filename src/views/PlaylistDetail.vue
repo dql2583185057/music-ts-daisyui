@@ -3,7 +3,7 @@
     <!-- 歌单信息 -->
     <div class="flex gap-6 mb-8">
       <img 
-        :src="playlist?.coverImgUrl || 'https://via.placeholder.com/200'" 
+        :src="playlist?.coverImgUrl || 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'" 
         class="w-48 h-48 rounded-lg object-cover"
       />
       <div class="flex-1">
@@ -38,15 +38,17 @@
             <td>
               <div class="flex items-center gap-3">
                 <img 
-                  :src="song.album.picUrl" 
+                  :src="song.al.picUrl"
                   class="w-10 h-10 rounded object-cover"
+                  :alt="song.name"
+                  @error="e => (e.target as HTMLImageElement).src = 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'"
                 />
                 <span>{{ song.name }}</span>
               </div>
             </td>
-            <td>{{ song.artists.map(a => a.name).join('/') }}</td>
-            <td>{{ song.album.name }}</td>
-            <td class="text-base-content/50">{{ formatDuration(song.duration) }}</td>
+            <td>{{ song.ar.map(a => a.name).join('/') }}</td>
+            <td>{{ song.al.name }}</td>
+            <td class="text-base-content/50">{{ formatDuration(song.dt) }}</td>
           </tr>
         </tbody>
       </table>
@@ -57,13 +59,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import type { Playlist, Song } from '@/types/music'
+import type { Song, Playlist } from '@/types/music'
 
 const route = useRoute()
 const playlist = ref<Playlist>()
 const songs = ref<Song[]>([])
 
-// 添加格式化时长函数
+// 格式化时长
 const formatDuration = (duration: number) => {
   const minutes = Math.floor(duration / 1000 / 60)
   const seconds = Math.floor((duration / 1000) % 60)

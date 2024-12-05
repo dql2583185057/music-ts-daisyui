@@ -1,0 +1,127 @@
+<template>
+  <div class="space-y-4">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="w-16">#</th>
+          <th>歌曲</th>
+          <th>歌手</th>
+          <th>专辑</th>
+          <th class="w-24">时长</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          v-for="(song, index) in songs" 
+          :key="song.id" 
+          class="hover group"
+        >
+          <td class="text-base-content/50">
+            <div class="flex items-center justify-center w-8 h-8 group-hover:hidden">
+              {{ startIndex + index + 1 }}
+            </div>
+            <div class="hidden group-hover:flex items-center justify-center w-8 h-8 text-primary cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              </svg>
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="relative w-10 h-10 group/cover">
+                <img 
+                  :src="song.al.picUrl" 
+                  class="w-full h-full rounded object-cover"
+                  :alt="song.name"
+                  @error="e => (e.target as HTMLImageElement).src = 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'"
+                />
+                <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 rounded">
+                  <div class="w-6 h-6 rounded-full bg-primary/80 flex items-center justify-center text-white transform scale-75 group-hover/cover:scale-100 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1 min-w-0">
+                  <span class="truncate" v-html="highlightKeyword(song.name, keyword)"></span>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <span v-if="song.fee === 1" class="badge badge-sm badge-error">VIP</span>
+                    <span v-if="song.sq" class="badge badge-sm badge-primary">SQ</span>
+                    <span 
+                      v-if="song.ar.some(artist => artist.id === originalArtistId)" 
+                      class="badge badge-sm badge-success"
+                    >
+                      原唱
+                    </span>
+                    <svg 
+                      v-if="song.mv" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      class="h-4 w-4 text-primary cursor-pointer hover:text-primary/80 transition-colors"
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                      @click.stop="handleMVClick(song.mv)"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span v-if="song.alia?.length" class="text-xs text-base-content/70 truncate">{{ song.alia.join(' ') }}</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td v-html="highlightKeyword(song.ar.map(a => a.name).join('/') || '-', keyword)"></td>
+          <td v-html="highlightKeyword(song.al.name || '-', keyword)"></td>
+          <td class="text-base-content/50">{{ formatDuration(song.dt) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import type { Song } from '@/types/music'
+
+const router = useRouter()
+
+const props = withDefaults(defineProps<{
+  songs: Song[]
+  keyword?: string
+  startIndex?: number
+  originalArtistId?: number
+}>(), {
+  startIndex: 0,
+  originalArtistId: undefined
+})
+
+// 格式化时长
+const formatDuration = (duration: number) => {
+  const minutes = Math.floor(duration / 1000 / 60)
+  const seconds = Math.floor((duration / 1000) % 60)
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
+// 高亮搜索关键词
+const highlightKeyword = (text: string, keyword?: string) => {
+  if (!keyword || !text) return text
+  const reg = new RegExp(keyword, 'gi')
+  return text.replace(reg, match => `<span class="keyword-highlight">${match}</span>`)
+}
+
+// 处理MV点击
+const handleMVClick = (mvId: number) => {
+  router.push(`/mv/${mvId}`)
+}
+</script>
+
+<style scoped>
+:deep(.keyword-highlight) {
+  color: hsl(var(--p));
+}
+</style> 

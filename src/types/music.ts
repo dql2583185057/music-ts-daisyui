@@ -1,39 +1,46 @@
 export interface Song {
   id: number
   name: string
-  duration: number
-  artists: Array<{
-    id: number
-    name: string
-  }>
-  album: {
+  ar: Artist[]
+  al: {
     id: number
     name: string
     picUrl: string
+  }
+  dt: number
+  mv: number
+  fee: number
+  sq?: boolean
+  alia?: string[]
+  originSongSimpleData?: {
+    artists: Array<{
+      id: number
+      name: string
+    }>
   }
 }
 
 export interface Playlist {
   id: number
   name: string
-  coverImgUrl?: string
-  cover?: string
-  songs?: Song[]
-  trackCount?: number
-  songCount?: number
-  description?: string
+  coverImgUrl: string
+  playCount: number
+  trackCount: number
   creator?: {
     id: number
     nickname: string
-    avatarUrl: string
   }
 }
 
 export interface Artist {
   id: number
   name: string
+  picUrl?: string
   img1v1Url: string
-  musicSize: number
+  musicSize?: number
+  fansSize?: number
+  albumSize?: number
+  mvSize?: number
 }
 
 export interface Album {
@@ -54,17 +61,79 @@ export interface HotSearchItem {
   score: number
 }
 
+export interface MV {
+  id: number
+  name: string
+  cover: string
+  artistName: string
+  duration: number
+  playCount: number
+}
+
+export interface Video {
+  id: number
+  title: string
+  coverUrl: string
+  creator: {
+    nickname: string
+  }
+  durationms: number
+  playTime: number
+}
+
+export interface User {
+  userId: number
+  nickname: string
+  avatarUrl: string
+  signature?: string
+}
+
+export interface Radio {
+  id: number
+  name: string
+  picUrl: string
+  desc?: string
+}
+
+export interface SearchResult {
+  songs?: Song[]
+  songCount?: number
+  artists?: Artist[]
+  artistCount?: number
+  albums?: Album[]
+  albumCount?: number
+  playlists?: Playlist[]
+  playlistCount?: number
+  mvs?: MV[]
+  mvCount?: number
+  videos?: Video[]
+  videoCount?: number
+  userprofiles?: User[]
+  userprofileCount?: number
+  djRadios?: Radio[]
+  djRadiosCount?: number
+  artist?: Artist
+}
+
 export interface SearchResponse {
   code: number
   result: {
     songs?: Song[]
     songCount?: number
-    playlists?: Playlist[]
-    playlistCount?: number
     artists?: Artist[]
     artistCount?: number
     albums?: Album[]
     albumCount?: number
+    playlists?: Playlist[]
+    playlistCount?: number
+    mvs?: MV[]
+    mvCount?: number
+    videos?: Video[]
+    videoCount?: number
+    userprofiles?: User[]
+    userprofileCount?: number
+    djRadios?: Radio[]
+    djRadiosCount?: number
   }
 }
 
@@ -74,3 +143,17 @@ export interface SearchSuggestion {
 }
 
 export type QRCodeStatus = 800 | 801 | 802 | 803 
+
+export interface PlaylistSong extends Song {
+  album: {
+    id: number
+    name: string
+    picId: number
+    picUrl: string
+    artist: {
+      id: number
+      name: string
+      picUrl: string | null
+    }
+  }
+} 

@@ -154,7 +154,11 @@
 
           <!-- 搜索建议 -->
           <div v-else class="p-4">
+            <div v-if="isLoadingSuggestions" class="flex justify-center py-4">
+              <span class="loading loading-spinner loading-sm"></span>
+            </div>
             <div 
+              v-else
               v-for="(suggestion, index) in searchSuggestions" 
               :key="index"
               class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer"
@@ -163,7 +167,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <span>{{ suggestion }}</span>
+              <span v-html="highlightKeyword(suggestion)"></span>
             </div>
           </div>
         </div>
@@ -227,17 +231,11 @@ watch(searchQuery, async (newQuery) => {
   if (newQuery) {
     try {
       isLoadingSuggestions.value = true
-      const suggestions = await searchService.getSearchSuggestions(newQuery)
-      searchSuggestions.value = suggestions
+      const res = await searchService.getSearchSuggestions(newQuery)
+      searchSuggestions.value = res
     } catch (error) {
       console.error('获取搜索建议失败:', error)
-      searchSuggestions.value = [
-        newQuery,
-        `${newQuery} - 热门`,
-        `${newQuery} - 歌手`,
-        `${newQuery} - 专辑`,
-        `${newQuery} - 歌单`
-      ]
+      searchSuggestions.value = []
     } finally {
       isLoadingSuggestions.value = false
     }
@@ -261,7 +259,7 @@ const handleSearch = () => {
       path: '/search',
       query: { 
         q: searchQuery.value.trim(),
-        type: '1'
+        type: '1018'
       }
     })
     showSuggestions.value = false
@@ -367,6 +365,13 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+// 高亮搜索关键词
+const highlightKeyword = (text: string): string => {
+  if (!searchQuery.value || !text) return text
+  const reg = new RegExp(searchQuery.value, 'gi')
+  return text.replace(reg, match => `<span class="text-primary">${match}</span>`)
+}
 </script>
 
 <style scoped>
